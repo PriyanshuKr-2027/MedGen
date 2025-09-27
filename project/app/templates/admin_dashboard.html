@@ -1,0 +1,223 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - MedGen{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900" data-translate="admin_dashboard">Admin Dashboard</h1>
+        <p class="text-gray-600 mt-1" data-translate="system_stats">System overview and analytics</p>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.total_patients }}</p>
+                    <p class="text-gray-600 text-sm">Total Patients</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-md text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.total_doctors }}</p>
+                    <p class="text-gray-600 text-sm">Active Doctors</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clipboard-list text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.total_consultations }}</p>
+                    <p class="text-gray-600 text-sm">Total Consultations</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-chart-line text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">98%</p>
+                    <p class="text-gray-600 text-sm">System Uptime</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Severity Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Consultation Severity Breakdown</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="h-4 w-4 bg-green-500 rounded mr-3"></div>
+                        <span class="text-gray-700">Mild Cases</span>
+                    </div>
+                    <span class="font-semibold">{{ stats.severity_breakdown.mild }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="h-4 w-4 bg-yellow-500 rounded mr-3"></div>
+                        <span class="text-gray-700">Moderate Cases</span>
+                    </div>
+                    <span class="font-semibold">{{ stats.severity_breakdown.moderate }}</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="h-4 w-4 bg-red-500 rounded mr-3"></div>
+                        <span class="text-gray-700">Critical Cases</span>
+                    </div>
+                    <span class="font-semibold">{{ stats.severity_breakdown.critical }}</span>
+                </div>
+            </div>
+            
+            <!-- Visual Progress Bars -->
+            <div class="mt-6 space-y-3">
+                {% set total = stats.severity_breakdown.mild + stats.severity_breakdown.moderate + stats.severity_breakdown.critical %}
+                {% if total > 0 %}
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-600 w-20">Mild</span>
+                    <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                        <div id="mild-progress" class="bg-green-500 h-2 rounded-full" data-width="{{ (stats.severity_breakdown.mild / total * 100)|round(1) }}"></div>
+                    </div>
+                    <span class="text-sm font-medium w-12">{{ (stats.severity_breakdown.mild / total * 100)|round(1) }}%</span>
+                </div>
+                
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-600 w-20">Moderate</span>
+                    <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                        <div id="moderate-progress" class="bg-yellow-500 h-2 rounded-full" data-width="{{ (stats.severity_breakdown.moderate / total * 100)|round(1) }}"></div>
+                    </div>
+                    <span class="text-sm font-medium w-12">{{ (stats.severity_breakdown.moderate / total * 100)|round(1) }}%</span>
+                </div>
+                
+                <div class="flex items-center">
+                    <span class="text-sm text-gray-600 w-20">Critical</span>
+                    <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                        <div id="critical-progress" class="bg-red-500 h-2 rounded-full" data-width="{{ (stats.severity_breakdown.critical / total * 100)|round(1) }}"></div>
+                    </div>
+                    <span class="text-sm font-medium w-12">{{ (stats.severity_breakdown.critical / total * 100)|round(1) }}%</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">System Health</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">AI Service Status</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">Online</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Database Status</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">Healthy</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">Voice Services</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">Active</span>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">WebRTC Service</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">Ready</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Recent Activity</h2>
+        </div>
+        
+        <div class="divide-y divide-gray-200">
+            {% for consultation in recent_consultations %}
+            <div class="p-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clipboard-list text-indigo-600 text-sm"></i>
+                        </div>
+                        
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">
+                                New consultation from {{ consultation.patient.name }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                {{ consultation.symptoms[:100] }}{% if consultation.symptoms|length > 100 %}...{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-right">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium
+                            {% if consultation.severity == 'critical' %}bg-red-100 text-red-800
+                            {% elif consultation.severity == 'moderate' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-green-100 text-green-800{% endif %}">
+                            {{ consultation.severity.title() }}
+                        </span>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ consultation.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            {% if not recent_consultations %}
+            <div class="p-12 text-center">
+                <i class="fas fa-chart-bar text-gray-400 text-6xl mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No recent activity</h3>
+                <p class="text-gray-600">System activity will appear here as it occurs.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set progress bar widths dynamically to avoid CSS validation errors
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all progress bars and set their widths based on data attributes
+    const progressBars = ['mild-progress', 'moderate-progress', 'critical-progress'];
+    
+    progressBars.forEach(function(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            const width = element.getAttribute('data-width');
+            if (width) {
+                element.style.width = width + '%';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

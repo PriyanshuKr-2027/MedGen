@@ -1,0 +1,447 @@
+{% extends "layout.html" %}
+
+{% block title %}Know Your Disease - MedGen{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center mb-4">
+            <a href="{{ url_for('patient.dashboard') }}" class="text-indigo-600 hover:text-indigo-800 mr-4">
+                <i class="fas fa-arrow-left"></i> <span data-translate="back_to_dashboard">Back to Dashboard</span>
+            </a>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-900" data-translate="know_your_disease">Know Your Disease</h1>
+        <p class="text-gray-600 mt-1" data-translate="search_disease_info">Search for comprehensive information about medical conditions</p>
+    </div>
+
+    <!-- Search Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4 text-center" data-translate="search_disease">Search for a Disease</h2>
+            <div class="flex gap-4">
+                <input type="text" 
+                       id="diseaseSearch" 
+                       placeholder="Enter disease name (e.g., Diabetes, Hypertension, Asthma)"
+                       class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                       data-translate-placeholder="search_placeholder">
+                <button id="searchBtn" 
+                        class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center">
+                    <i class="fas fa-search mr-2"></i>
+                    <span data-translate="search">Search</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Common Diseases Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6" data-translate="common_diseases">Common Diseases & Conditions</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- Cardiovascular -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-heartbeat text-red-500 mr-2"></i>
+                    <span data-translate="cardiovascular">Cardiovascular</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Hypertension">
+                        <span data-translate="hypertension">Hypertension</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Heart Disease">
+                        <span data-translate="heart_disease">Heart Disease</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Arrhythmia">
+                        <span data-translate="arrhythmia">Arrhythmia</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Respiratory -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-lungs text-blue-500 mr-2"></i>
+                    <span data-translate="respiratory">Respiratory</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Asthma">
+                        <span data-translate="asthma">Asthma</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="COPD">
+                        <span data-translate="copd">COPD</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Pneumonia">
+                        <span data-translate="pneumonia">Pneumonia</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Endocrine -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-flask text-green-500 mr-2"></i>
+                    <span data-translate="endocrine">Endocrine</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Diabetes">
+                        <span data-translate="diabetes">Diabetes</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Thyroid Disorders">
+                        <span data-translate="thyroid_disorders">Thyroid Disorders</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Obesity">
+                        <span data-translate="obesity">Obesity</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Infectious -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-virus text-orange-500 mr-2"></i>
+                    <span data-translate="infectious">Infectious</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Common Cold">
+                        <span data-translate="common_cold">Common Cold</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Influenza">
+                        <span data-translate="influenza">Influenza</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="COVID-19">
+                        <span data-translate="covid19">COVID-19</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Gastrointestinal -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-stomach text-purple-500 mr-2"></i>
+                    <span data-translate="gastrointestinal">Gastrointestinal</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="GERD">
+                        <span data-translate="gerd">GERD</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="IBS">
+                        <span data-translate="ibs">IBS</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Peptic Ulcer">
+                        <span data-translate="peptic_ulcer">Peptic Ulcer</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mental Health -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-brain text-pink-500 mr-2"></i>
+                    <span data-translate="mental_health">Mental Health</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Anxiety">
+                        <span data-translate="anxiety">Anxiety</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Depression">
+                        <span data-translate="depression">Depression</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Insomnia">
+                        <span data-translate="insomnia">Insomnia</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dermatological -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-hand-paper text-yellow-500 mr-2"></i>
+                    <span data-translate="dermatological">Dermatological</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Eczema">
+                        <span data-translate="eczema">Eczema</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Psoriasis">
+                        <span data-translate="psoriasis">Psoriasis</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Acne">
+                        <span data-translate="acne">Acne</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Musculoskeletal -->
+            <div class="disease-category mb-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-3 flex items-center">
+                    <i class="fas fa-bone text-gray-500 mr-2"></i>
+                    <span data-translate="musculoskeletal">Musculoskeletal</span>
+                </h3>
+                <div class="space-y-2">
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Arthritis">
+                        <span data-translate="arthritis">Arthritis</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Osteoporosis">
+                        <span data-translate="osteoporosis">Osteoporosis</span>
+                    </button>
+                    <button class="disease-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-indigo-50 hover:border-indigo-300 transition-colors" data-disease="Back Pain">
+                        <span data-translate="back_pain">Back Pain</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingDiv" class="hidden text-center py-8">
+        <div class="inline-flex items-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mr-3"></div>
+            <span class="text-gray-600" data-translate="loading_disease_info">Loading disease information...</span>
+        </div>
+    </div>
+
+    <!-- Disease Information Display -->
+    <div id="diseaseInfoSection" class="hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="mb-6">
+                <h2 id="diseaseTitle" class="text-2xl font-bold text-gray-900 mb-2"></h2>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span data-translate="medical_disclaimer">This information is for educational purposes only. Always consult a healthcare professional for medical advice.</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Overview -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-info text-blue-500 mr-2"></i>
+                        <span data-translate="overview">Overview</span>
+                    </h3>
+                    <p id="diseaseOverview" class="text-gray-700"></p>
+                </div>
+
+                <!-- Symptoms -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-thermometer text-red-500 mr-2"></i>
+                        <span data-translate="symptoms">Symptoms</span>
+                    </h3>
+                    <ul id="diseaseSymptoms" class="space-y-1 text-gray-700"></ul>
+                </div>
+
+                <!-- Causes -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-question-circle text-yellow-500 mr-2"></i>
+                        <span data-translate="causes">Causes</span>
+                    </h3>
+                    <ul id="diseaseCauses" class="space-y-1 text-gray-700"></ul>
+                </div>
+
+                <!-- Treatment -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-stethoscope text-green-500 mr-2"></i>
+                        <span data-translate="treatment">Treatment</span>
+                    </h3>
+                    <ul id="diseaseTreatment" class="space-y-1 text-gray-700"></ul>
+                </div>
+
+                <!-- Home Remedies -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-home text-purple-500 mr-2"></i>
+                        <span data-translate="home_remedies">Home Remedies</span>
+                    </h3>
+                    <ul id="diseaseHomeRemedies" class="space-y-1 text-gray-700"></ul>
+                </div>
+
+                <!-- OTC Medications -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-pills text-indigo-500 mr-2"></i>
+                        <span data-translate="otc_medications">OTC Medications</span>
+                    </h3>
+                    <ul id="diseaseOtcMeds" class="space-y-1 text-gray-700"></ul>
+                </div>
+
+                <!-- Prevention -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-shield-alt text-teal-500 mr-2"></i>
+                        <span data-translate="prevention">Prevention</span>
+                    </h3>
+                    <ul id="diseasePrevention" class="space-y-1 text-gray-700"></ul>
+                </div>
+
+                <!-- When to See Doctor -->
+                <div class="bg-red-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-red-900 mb-3 flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i>
+                        <span data-translate="when_to_see_doctor">When to See a Doctor</span>
+                    </h3>
+                    <p id="diseaseWhenToSeeDoctor" class="text-red-800"></p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-6 flex flex-wrap gap-4 justify-center">
+                <button id="connectDoctorBtn" 
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center">
+                    <i class="fas fa-video mr-2"></i>
+                    <span data-translate="connect_doctor">Connect with Doctor</span>
+                </button>
+                <button id="reportSymptomsBtn" 
+                        class="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center">
+                    <i class="fas fa-heartbeat mr-2"></i>
+                    <span data-translate="report_symptoms">Report Symptoms</span>
+                </button>
+                <button id="searchAgainBtn" 
+                        class="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center">
+                    <i class="fas fa-search mr-2"></i>
+                    <span data-translate="search_again">Search Again</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+        <div class="flex items-center justify-center text-red-600">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <span data-translate="error_loading">Error loading disease information. Please try again.</span>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const diseaseSearch = document.getElementById('diseaseSearch');
+    const searchBtn = document.getElementById('searchBtn');
+    const loadingDiv = document.getElementById('loadingDiv');
+    const diseaseInfoSection = document.getElementById('diseaseInfoSection');
+    const errorMessage = document.getElementById('errorMessage');
+    const diseaseButtons = document.querySelectorAll('.disease-btn');
+    const searchAgainBtn = document.getElementById('searchAgainBtn');
+
+    function searchDisease(diseaseName) {
+        if (!diseaseName.trim()) {
+            alert('Please enter a disease name');
+            return;
+        }
+
+        // Hide previous results and show loading
+        diseaseInfoSection.classList.add('hidden');
+        errorMessage.classList.add('hidden');
+        loadingDiv.classList.remove('hidden');
+
+        // Scroll to loading section
+        loadingDiv.scrollIntoView({ behavior: 'smooth' });
+
+        fetch('/patient/get-disease-info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                disease_name: diseaseName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingDiv.classList.add('hidden');
+            
+            if (data.success) {
+                displayDiseaseInfo(data.disease_info);
+            } else {
+                showError(data.error || 'Failed to get disease information');
+            }
+        })
+        .catch(error => {
+            loadingDiv.classList.add('hidden');
+            showError('Network error. Please check your connection and try again.');
+            console.error('Error:', error);
+        });
+    }
+
+    function displayDiseaseInfo(info) {
+        document.getElementById('diseaseTitle').textContent = info.disease_name;
+        document.getElementById('diseaseOverview').textContent = info.overview || 'No overview available.';
+        
+        // Populate lists
+        populateList('diseaseSymptoms', info.symptoms);
+        populateList('diseaseCauses', info.causes);
+        populateList('diseaseTreatment', info.treatment);
+        populateList('diseaseHomeRemedies', info.home_remedies);
+        populateList('diseaseOtcMeds', info.otc_medications);
+        populateList('diseasePrevention', info.prevention);
+        
+        document.getElementById('diseaseWhenToSeeDoctor').textContent = 
+            info.when_to_see_doctor || 'Consult a healthcare professional for proper diagnosis and treatment.';
+
+        diseaseInfoSection.classList.remove('hidden');
+        diseaseInfoSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function populateList(elementId, items) {
+        const element = document.getElementById(elementId);
+        element.innerHTML = '';
+        
+        if (items && items.length > 0) {
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-circle text-xs text-gray-400 mr-2"></i>${item}`;
+                element.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.innerHTML = '<i class="fas fa-circle text-xs text-gray-400 mr-2"></i>No information available';
+            li.className = 'text-gray-500 italic';
+            element.appendChild(li);
+        }
+    }
+
+    function showError(message) {
+        errorMessage.classList.remove('hidden');
+        errorMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Event listeners
+    searchBtn.addEventListener('click', function() {
+        searchDisease(diseaseSearch.value);
+    });
+
+    diseaseSearch.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchDisease(diseaseSearch.value);
+        }
+    });
+
+    diseaseButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const diseaseName = this.getAttribute('data-disease');
+            diseaseSearch.value = diseaseName;
+            searchDisease(diseaseName);
+        });
+    });
+
+    searchAgainBtn.addEventListener('click', function() {
+        diseaseInfoSection.classList.add('hidden');
+        errorMessage.classList.add('hidden');
+        diseaseSearch.value = '';
+        diseaseSearch.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Additional button event listeners
+    document.getElementById('connectDoctorBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("connect.connect_doctor") }}';
+    });
+
+    document.getElementById('reportSymptomsBtn').addEventListener('click', function() {
+        window.location.href = '{{ url_for("patient.symptom_report") }}';
+    });
+});
+</script>
+{% endblock %}

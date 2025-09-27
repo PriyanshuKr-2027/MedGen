@@ -1,0 +1,204 @@
+{% extends "layout.html" %}
+
+{% block title %}Video Consultation - MedGen{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900">
+    <!-- Header -->
+    <div class="bg-gray-800 border-b border-gray-700 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="{{ url_for('patient.dashboard') if user_role == 'patient' else url_for('doctor.dashboard') }}" 
+                   class="text-gray-400 hover:text-white mr-4">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-xl font-semibold text-white">Video Consultation</h1>
+                    <p class="text-gray-400 text-sm">Connected with Dr. Sarah Wilson</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="text-green-500 text-sm font-medium">
+                    <span id="callTimer">00:02</span>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="text-gray-400 hover:text-white">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen">
+        <!-- Video Area -->
+        <div class="flex-1 relative">
+            <!-- Main Video (Doctor) -->
+            <div class="h-full w-full bg-gradient-to-br from-indigo-600 to-purple-700 flex items-center justify-center relative">
+                <div class="text-center">
+                    <div class="h-32 w-32 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-white text-4xl font-bold">DW</span>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-white mb-2">Dr. Sarah Wilson</h3>
+                    <p class="text-indigo-200">Internal Medicine Specialist</p>
+                </div>
+                
+                <!-- Video Controls -->
+                <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
+                    <button id="toggleVideo" class="h-12 w-12 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition-colors">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    
+                    <button id="toggleAudio" class="h-12 w-12 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center text-white transition-colors">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                    <button id="endCall" class="h-12 w-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-white transition-colors">
+                        <i class="fas fa-phone-slash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Self Video (Picture-in-Picture) -->
+            <div class="absolute top-4 right-4 w-48 h-32 bg-gray-800 rounded-lg border-2 border-gray-600 overflow-hidden">
+                <div class="h-full w-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="h-16 w-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <span class="text-white font-bold text-lg">JD</span>
+                        </div>
+                        <p class="text-white text-sm font-medium">You</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Sidebar -->
+        <div class="w-80 bg-white border-l border-gray-200 flex flex-col">
+            <!-- Chat Header -->
+            <div class="p-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-900">Chat</h3>
+                <p class="text-sm text-gray-600">Real-time consultation notes</p>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="flex-1 p-4 overflow-y-auto space-y-4">
+                <div class="bg-gray-100 rounded-lg p-3">
+                    <div class="flex items-center mb-1">
+                        <span class="font-medium text-sm text-gray-900">Dr. Wilson</span>
+                        <span class="text-xs text-gray-500 ml-2">17:58:45</span>
+                    </div>
+                    <p class="text-sm text-gray-800">Hello! I can see you clearly. How are you feeling today?</p>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="chatInput" placeholder="Type a message..." 
+                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm">
+                    <button id="sendChatBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WebRTC Script -->
+<script src="{{ url_for('static', filename='js/webrtc-client.js') }}"></script>
+<script>
+let callStartTime = Date.now();
+let timerInterval;
+
+// Initialize call timer
+function startCallTimer() {
+    timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('callTimer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Video controls
+document.getElementById('toggleVideo').addEventListener('click', function() {
+    const icon = this.querySelector('i');
+    if (icon.classList.contains('fa-video')) {
+        icon.classList.remove('fa-video');
+        icon.classList.add('fa-video-slash');
+        this.classList.add('bg-red-600');
+        this.classList.remove('bg-gray-700');
+    } else {
+        icon.classList.add('fa-video');
+        icon.classList.remove('fa-video-slash');
+        this.classList.remove('bg-red-600');
+        this.classList.add('bg-gray-700');
+    }
+});
+
+document.getElementById('toggleAudio').addEventListener('click', function() {
+    const icon = this.querySelector('i');
+    if (icon.classList.contains('fa-microphone')) {
+        icon.classList.remove('fa-microphone');
+        icon.classList.add('fa-microphone-slash');
+        this.classList.add('bg-red-600');
+        this.classList.remove('bg-gray-700');
+    } else {
+        icon.classList.add('fa-microphone');
+        icon.classList.remove('fa-microphone-slash');
+        this.classList.remove('bg-red-600');
+        this.classList.add('bg-gray-700');
+    }
+});
+
+document.getElementById('endCall').addEventListener('click', function() {
+    if (confirm('Are you sure you want to end the call?')) {
+        clearInterval(timerInterval);
+        window.location.href = '{{ url_for("patient.dashboard") if user_role == "patient" else url_for("doctor.dashboard") }}';
+    }
+});
+
+// Chat functionality
+document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
+document.getElementById('chatInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        sendChatMessage();
+    }
+});
+
+function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add message to chat (demo implementation)
+    const chatArea = document.querySelector('.overflow-y-auto');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'bg-indigo-100 rounded-lg p-3 ml-8';
+    messageDiv.innerHTML = `
+        <div class="flex items-center mb-1">
+            <span class="font-medium text-sm text-gray-900">You</span>
+            <span class="text-xs text-gray-500 ml-2">${new Date().toLocaleTimeString()}</span>
+        </div>
+        <p class="text-sm text-gray-800">${message}</p>
+    `;
+    
+    chatArea.appendChild(messageDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    input.value = '';
+}
+
+// Initialize
+startCallTimer();
+
+// Initialize WebRTC if available
+if (window.WebRTCClient) {
+    const roomId = '{{ room_id }}';
+    const userRole = '{{ user_role }}';
+    window.webrtc = new WebRTCClient(roomId, userRole);
+    window.webrtc.init();
+}
+</script>
+{% endblock %}

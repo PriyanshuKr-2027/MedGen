@@ -1,0 +1,522 @@
+{% extends "layout.html" %}
+
+{% block title %}Doctor Dashboard - MedGen{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900" data-translate="doctor_dashboard">Doctor Dashboard</h1>
+        <p class="text-gray-600 mt-1">Manage patient consultations and treatments</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900" data-stat="total-patients">{{ stats.total_patients }}</p>
+                    <p class="text-gray-600 text-sm">Total Patients</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.todays_appointments or 8 }}</p>
+                    <p class="text-gray-600 text-sm">Today's Appointments</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-envelope text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.unread_messages or 3 }}</p>
+                    <p class="text-gray-600 text-sm">Unread Messages</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900 text-red-600" data-stat="critical-cases">{{ stats.critical_cases or 2 }}</p>
+                    <p class="text-gray-600 text-sm">Critical Cases</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.completed_today }}</p>
+                    <p class="text-gray-600 text-sm">Completed Today</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="mb-6">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+                <button id="patientsTab" class="tab-btn active py-2 px-1 border-b-2 border-indigo-500 font-medium text-sm text-indigo-600">
+                    <i class="fas fa-users mr-2"></i>Patients
+                </button>
+                <button id="appointmentsTab" class="tab-btn py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    <i class="fas fa-calendar-alt mr-2"></i>Appointments
+                </button>
+                <button id="messagesTab" class="tab-btn py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                    <i class="fas fa-envelope mr-2"></i>Messages
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Patients Tab Content -->
+    <div id="patientsContent" class="tab-content">
+        <!-- Search and Filter Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+            <div class="p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                    <div class="flex-1 max-w-lg">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="patientSearch" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                                   placeholder="Search patients by ID, name, or symptoms...">
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <select id="statusFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <select id="severityFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">All Severity</option>
+                            <option value="critical">Critical</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="mild">Mild</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Consultations -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Patient Consultations</h2>
+            </div>
+            
+            <div id="consultationsList" class="divide-y divide-gray-200">
+                {% for consultation in consultations %}
+                <div class="consultation-item p-6 hover:bg-gray-50 transition-colors" 
+                     data-patient-id="{{ consultation.patient.id }}"
+                     data-patient-name="{{ consultation.patient.name|lower }}"
+                     data-symptoms="{{ consultation.symptoms|lower }}"
+                     data-status="{{ consultation.status }}"
+                     data-severity="{{ consultation.severity }}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start space-x-4">
+                            <!-- Patient Avatar -->
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <span class="text-indigo-600 font-medium text-lg">
+                                        {{ consultation.patient.name[:2].upper() }}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center space-x-3 mb-2">
+                                    <h3 class="font-medium text-gray-900">{{ consultation.patient.name }}</h3>
+                                    <span class="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                        ID: {{ consultation.patient.id }}
+                                    </span>
+                                    
+                                    <span class="px-2 py-1 rounded-full text-xs font-medium
+                                        {% if consultation.severity == 'critical' %}bg-red-100 text-red-800
+                                        {% elif consultation.severity == 'moderate' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-green-100 text-green-800{% endif %}">
+                                        {{ consultation.severity.title() }}
+                                    </span>
+                                    
+                                    <span class="text-sm text-gray-500">
+                                        Last consultation: {{ consultation.created_at.strftime('%b %d, %Y') }}
+                                    </span>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <p class="text-sm text-gray-600 mb-1"><strong>Recent symptoms:</strong></p>
+                                    <div class="flex flex-wrap gap-2">
+                                        {% set symptoms_list = consultation.symptoms.split(',')[:3] %}
+                                        {% for symptom in symptoms_list %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ symptom.strip() }}
+                                        </span>
+                                        {% endfor %}
+                                        {% if consultation.symptoms.split(',')|length > 3 %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            +{{ consultation.symptoms.split(',')|length - 3 }} more
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if consultation.patient.age %}
+                                <div class="text-sm text-gray-600">
+                                    <span>Age: {{ consultation.patient.age }}</span>
+                                    {% if consultation.patient.gender %}
+                                    <span class="ml-4">Gender: {{ consultation.patient.gender.title() }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex space-x-2">
+                                <button class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <i class="fas fa-comments mr-1"></i>
+                                    Chat
+                                </button>
+                                <button class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <i class="fas fa-phone mr-1"></i>
+                                    Call
+                                </button>
+                                <button class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <i class="fas fa-folder-open mr-1"></i>
+                                    Records
+                                </button>
+                            </div>
+                            <a href="{{ url_for('doctor.view_consultation', consultation_id=consultation.id) }}" 
+                               class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <i class="fas fa-eye mr-2"></i>
+                                Review Case
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not consultations %}
+                <div class="p-12 text-center">
+                    <i class="fas fa-clipboard-list text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No pending consultations</h3>
+                    <p class="text-gray-600">New patient consultations will appear here when available.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Tab Content -->
+    <div id="appointmentsContent" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Today's Appointments</h2>
+            </div>
+            
+            <div class="divide-y divide-gray-200">
+                <!-- Sample Appointment Items -->
+                <div class="p-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-clock text-teal-600"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-medium text-gray-900">Priya Sharma</h3>
+                                    <p class="text-sm text-gray-500">10:00 AM</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        emergency
+                                    </span>
+                                    <button class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-phone mr-1"></i>
+                                        Call
+                                    </button>
+                                    <button class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+                                        Join
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="h-12 w-12 bg-teal-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-clock text-teal-600"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-medium text-gray-900">Rajesh Kumar</h3>
+                                    <p class="text-sm text-gray-500">2:00 PM</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        follow-up
+                                    </span>
+                                    <button class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                        <i class="fas fa-phone mr-1"></i>
+                                        Call
+                                    </button>
+                                    <button class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+                                        Join
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages Tab Content -->
+    <div id="messagesContent" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Unread Messages</h2>
+            </div>
+            
+            <div class="p-12 text-center">
+                <i class="fas fa-envelope text-gray-400 text-6xl mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No new messages</h3>
+                <p class="text-gray-600">Patient messages will appear here when available.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab functionality
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tabId = this.id.replace('Tab', 'Content');
+            
+            // Remove active class from all tabs
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active', 'border-indigo-500', 'text-indigo-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Activate clicked tab
+            this.classList.add('active', 'border-indigo-500', 'text-indigo-600');
+            this.classList.remove('border-transparent', 'text-gray-500');
+            
+            // Show corresponding content
+            document.getElementById(tabId).classList.remove('hidden');
+        });
+    });
+
+    // Search and filter functionality
+    const searchInput = document.getElementById('patientSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const severityFilter = document.getElementById('severityFilter');
+    const consultationItems = document.querySelectorAll('.consultation-item');
+
+    function filterConsultations() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const statusValue = statusFilter.value;
+        const severityValue = severityFilter.value;
+
+        consultationItems.forEach(item => {
+            const patientId = item.dataset.patientId;
+            const patientName = item.dataset.patientName;
+            const symptoms = item.dataset.symptoms;
+            const status = item.dataset.status;
+            const severity = item.dataset.severity;
+
+            // Check search term
+            const matchesSearch = !searchTerm || 
+                patientId.includes(searchTerm) ||
+                patientName.includes(searchTerm) ||
+                symptoms.includes(searchTerm);
+
+            // Check filters
+            const matchesStatus = !statusValue || status === statusValue;
+            const matchesSeverity = !severityValue || severity === severityValue;
+
+            // Show/hide item
+            if (matchesSearch && matchesStatus && matchesSeverity) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Show "no results" message if needed
+        const visibleItems = Array.from(consultationItems).filter(item => 
+            item.style.display !== 'none'
+        );
+        
+        const noResultsMsg = document.getElementById('noResultsMessage');
+        if (visibleItems.length === 0 && consultationItems.length > 0) {
+            if (!noResultsMsg) {
+                const noResults = document.createElement('div');
+                noResults.id = 'noResultsMessage';
+                noResults.className = 'p-12 text-center';
+                noResults.innerHTML = `
+                    <i class="fas fa-search text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No patients found</h3>
+                    <p class="text-gray-600">Try adjusting your search criteria.</p>
+                `;
+                document.getElementById('consultationsList').appendChild(noResults);
+            }
+        } else if (noResultsMsg) {
+            noResultsMsg.remove();
+        }
+    }
+
+    // Add event listeners for search and filters
+    searchInput.addEventListener('input', filterConsultations);
+    statusFilter.addEventListener('change', filterConsultations);
+    severityFilter.addEventListener('change', filterConsultations);
+
+    // Real-time search suggestions (optional enhancement)
+    let searchTimeout;
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const input = this;
+        
+        // Add loading indicator
+        input.style.backgroundImage = 'url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwIDNWMSIgc3Ryb2tlPSIjOTQ5NEE0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K")';
+        
+        searchTimeout = setTimeout(() => {
+            input.style.backgroundImage = 'none';
+            filterConsultations();
+        }, 300);
+    });
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + F to focus search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+        
+        // Escape to clear search
+        if (e.key === 'Escape' && document.activeElement === searchInput) {
+            searchInput.value = '';
+            filterConsultations();
+        }
+    });
+
+    // Enhanced patient actions
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('[data-action="call"]')) {
+            const patientName = e.target.closest('.consultation-item').querySelector('h3').textContent;
+            alert(`Initiating call with ${patientName}...`);
+        }
+        
+        if (e.target.closest('[data-action="chat"]')) {
+            const patientName = e.target.closest('.consultation-item').querySelector('h3').textContent;
+            alert(`Opening chat with ${patientName}...`);
+        }
+        
+        if (e.target.closest('[data-action="records"]')) {
+            const patientId = e.target.closest('.consultation-item').dataset.patientId;
+            // Could open a modal or navigate to patient records
+            window.location.href = `/doctor/patient/${patientId}/history`;
+        }
+    });
+});
+
+// Statistics refresh function
+function refreshStats() {
+    fetch('/doctor/api/stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector('[data-stat="total-patients"]').textContent = data.stats.total_patients;
+                document.querySelector('[data-stat="pending-consultations"]').textContent = data.stats.pending_consultations;
+                document.querySelector('[data-stat="critical-cases"]').textContent = data.stats.critical_cases;
+                document.querySelector('[data-stat="completed-today"]').textContent = data.stats.completed_today;
+            }
+        })
+        .catch(error => console.error('Error refreshing stats:', error));
+}
+
+// Auto-refresh stats every 5 minutes
+setInterval(refreshStats, 5 * 60 * 1000);
+</script>
+
+<style>
+.tab-btn.active {
+    border-bottom-color: #4f46e5 !important;
+    color: #4f46e5 !important;
+}
+
+.consultation-item:hover {
+    background-color: #f9fafb;
+    border-left: 4px solid #4f46e5;
+}
+
+.consultation-item {
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+/* Search input animation */
+#patientSearch:focus {
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Loading animation for search */
+.search-loading {
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwIDNWMSIgc3Ryb2tlPSIjOTQ5NEE0IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}

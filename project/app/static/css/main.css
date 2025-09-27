@@ -1,0 +1,327 @@
+/* Custom Styles for TeleMed AI */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Language Toggle Styles */
+.language-toggle {
+    position: relative;
+}
+
+.language-dropdown {
+    min-width: 150px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.language-dropdown button {
+    transition: background-color 0.2s ease;
+}
+
+.language-dropdown button:hover {
+    background-color: #f3f4f6;
+}
+
+/* Hindi font support */
+[lang="hi"] {
+    font-family: 'Noto Sans Devanagari', 'Segoe UI', Arial, sans-serif;
+}
+
+/* CSS Variables */
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+}
+
+/* Smooth transitions */
+*,
+*::before,
+*::after {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode toggle button */
+#darkModeToggle,
+#navDarkModeToggle {
+    transition: all 0.2s ease;
+}
+
+#darkModeToggle:hover,
+#navDarkModeToggle:hover {
+    transform: scale(1.05);
+}
+
+/* Flash messages auto-hide */
+.alert {
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Card hover effects */
+.hover\:shadow-md:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Voice recording animation */
+.recording-pulse {
+    animation: recordingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes recordingPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+/* Chat bubble styles */
+.chat-bubble {
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.chat-bubble.user {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.chat-bubble.assistant {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+}
+
+/* Custom scrollbar */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Medical priority indicators */
+.priority-low {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.priority-moderate {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.priority-high {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Video call interface */
+.video-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.video-pip {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Button hover states */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Loading spinner */
+.spinner {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Focus states for accessibility */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.5);
+}
+
+/* Medical icons styling */
+.medical-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+/* Status indicators */
+.status-online {
+    position: relative;
+}
+
+.status-online::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    border-radius: 50%;
+    top: -2px;
+    right: -2px;
+    border: 2px solid white;
+}
+
+/* Responsive design helpers */
+@media (max-width: 768px) {
+    .mobile-padding {
+        padding: 1rem;
+    }
+    
+    .mobile-text {
+        font-size: 0.875rem;
+    }
+    
+    .mobile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Emergency Call Button */
+#emergencyCallBtn {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+#emergencyCallBtn:hover {
+    box-shadow: 0 8px 30px rgba(220, 38, 38, 0.4);
+    transform: scale(1.1) !important;
+}
+
+#emergencyCallBtn:active {
+    transform: scale(0.95) !important;
+}
+
+/* Emergency button animation */
+@keyframes emergency-pulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(220, 38, 38, 0.6), 0 0 0 0 rgba(220, 38, 38, 0.7);
+    }
+}
+
+#emergencyCallBtn.animate-pulse {
+    animation: emergency-pulse 2s infinite;
+}
+
+/* Tooltip styles */
+#emergencyCallBtn .group:hover span {
+    animation: tooltipFadeIn 0.3s ease;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+/* Mobile adjustments for emergency button */
+@media (max-width: 768px) {
+    #emergencyCallBtn {
+        width: 56px;
+        height: 56px;
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    #emergencyCallBtn i {
+        font-size: 1.125rem;
+    }
+    
+    /* Hide tooltip on mobile to avoid interference */
+    #emergencyCallBtn span {
+        display: none;
+    }
+}
+
+/* Ensure emergency button doesn't interfere with other content */
+.content-with-emergency {
+    padding-bottom: 80px;
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+    .dark\:bg-gray-800 {
+        background-color: #1f2937;
+    }
+    
+    .dark\:text-white {
+        color: #ffffff;
+    }
+}

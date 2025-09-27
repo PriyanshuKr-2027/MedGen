@@ -1,0 +1,889 @@
+{% extends "layout.html" %}
+
+{% block title %}AI Symptom Analysis - MedGen{% endblock %}
+
+{% block content %}
+<style>
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #4F46E5;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.slider::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #4F46E5;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+</style>
+<div class="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-6 flex items-center">
+        <a href="{{ url_for('patient.dashboard') }}" class="text-gray-600 hover:text-gray-900 mr-4">
+            <i class="fas fa-arrow-left text-xl"></i>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900" data-translate="symptom_analysis">AI Symptom Analysis</h1>
+            <p class="text-gray-600" data-translate="describe_symptoms">Describe your symptoms for personalized health insights</p>
+        </div>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 h-96 flex flex-col">
+        <!-- Chat Messages -->
+        <div id="chatMessages" class="flex-1 p-6 overflow-y-auto space-y-4">
+            <div class="flex items-start">
+                <div class="bg-gray-100 rounded-lg p-4 max-w-md">
+                    <p class="text-gray-800">Hello! I'm here to help analyze your symptoms. Please describe what you're experiencing.</p>
+                    <span class="text-xs text-gray-500">17:57:26</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="border-t border-gray-200 p-4">
+            <div class="flex items-center space-x-3">
+                <div class="flex-1 relative">
+                    <input type="text" id="symptomInput" placeholder="Describe your symptoms..." 
+                           data-translate-placeholder="type_symptoms"
+                           class="w-full px-4 py-3 pr-16 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    
+                    <!-- Voice Input Button -->
+                    <button id="voiceBtn" class="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-indigo-600">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                    <!-- Send Button -->
+                    <button id="sendBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-indigo-600">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clarifying Questions -->
+    <div id="clarifyingQuestions" class="mt-6 hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center mb-6">
+                <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                    <i class="fas fa-question-circle text-blue-600"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900">Help us understand better</h2>
+                    <p class="text-gray-600">Please answer a few questions for a more accurate analysis</p>
+                </div>
+            </div>
+            
+            <form id="clarificationForm" class="space-y-6">
+                <div id="questionsContainer"></div>
+                
+                <div class="flex justify-between pt-6 border-t border-gray-200">
+                    <button type="button" onclick="skipClarification()" 
+                            class="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg transition-colors">
+                        Skip Questions
+                    </button>
+                    <button type="submit" 
+                            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        Continue Analysis
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Analysis Results -->
+    <div id="analysisResults" class="mt-6 hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-semibold text-gray-900">AI Analysis Results</h2>
+                <span id="priorityBadge" class="px-3 py-1 rounded-full text-sm font-medium"></span>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Possible Causes -->
+                <div>
+                    <h3 class="font-semibold text-gray-900 mb-3">Possible Causes</h3>
+                    <ul id="causesList" class="space-y-2"></ul>
+                </div>
+                
+                <!-- Recommended Remedies -->
+                <div>
+                    <h3 class="font-semibold text-gray-900 mb-3">Recommended Remedies</h3>
+                    <ul id="remediesList" class="space-y-2"></ul>
+                </div>
+            </div>
+            
+            <!-- OTC Suggestions -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="font-semibold text-gray-900 mb-3">Over-the-Counter Suggestions</h3>
+                <div id="otcSuggestions" class="grid md:grid-cols-2 gap-4"></div>
+            </div>
+            
+            <!-- Medical Disclaimer -->
+            <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-amber-600 mt-1 mr-3"></i>
+                    <div>
+                        <p class="text-sm text-amber-800">
+                            <strong>Important:</strong> This analysis is for informational purposes only and should not replace professional medical advice. 
+                            If symptoms persist or worsen, please consult with a healthcare provider.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Follow-up Section -->
+            <div id="followupSection" class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="font-semibold text-gray-900 mb-4">Ask Follow-up Questions</h3>
+                
+                <!-- Suggested Questions -->
+                <div id="suggestedQuestions" class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Common follow-up questions:</p>
+                    <div id="suggestionsList" class="flex flex-wrap gap-2"></div>
+                </div>
+                
+                <!-- Follow-up Input -->
+                <div class="flex space-x-3">
+                    <input type="text" id="followupInput" placeholder="Ask a follow-up question..." 
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <button id="askFollowupBtn" onclick="askFollowup()" 
+                            class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        Ask
+                    </button>
+                </div>
+                
+                <!-- Follow-up History -->
+                <div id="followupHistory" class="mt-4 space-y-3"></div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="mt-6 flex space-x-4">
+                <button onclick="startNewAnalysis()" class="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                    New Analysis
+                </button>
+                <a href="{{ url_for('patient.dashboard') }}" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Voice Status Modal -->
+<div id="voiceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 max-w-sm mx-4">
+        <div class="text-center">
+            <div id="voiceIconContainer" class="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i id="voiceIcon" class="fas fa-microphone text-red-600 text-2xl animate-pulse"></i>
+            </div>
+            <h3 id="voiceModalTitle" class="text-lg font-semibold text-gray-900 mb-2" data-translate="listening">Listening...</h3>
+            <p id="voiceModalSubtitle" class="text-gray-600 text-sm mb-2" data-translate="speak_now">Speak clearly about your symptoms</p>
+            <div id="voiceTranscript" class="text-sm text-indigo-600 mb-4 min-h-[20px] italic"></div>
+            <div class="flex gap-2 justify-center">
+                <button id="stopVoiceBtn" onclick="stopListening()" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                        data-translate="stop">
+                    Stop
+                </button>
+                <button id="closeVoiceModal" onclick="closeVoiceModal()" class="hidden bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                        data-translate="use_text">
+                    Use Text
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/stt-client.js') }}"></script>
+<script>
+let isListening = false;
+let currentAnalysis = null;
+let currentConsultationId = null;
+let currentSymptoms = null;
+let clarifyingQuestions = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing...');
+    
+    const sendBtn = document.getElementById('sendBtn');
+    const symptomInput = document.getElementById('symptomInput');
+    const voiceBtn = document.getElementById('voiceBtn');
+    
+    // Check if elements exist
+    console.log('sendBtn:', sendBtn);
+    console.log('symptomInput:', symptomInput);
+    console.log('voiceBtn:', voiceBtn);
+    
+    // Check speech recognition support
+    console.log('Speech recognition supported:', SpeechToTextClient.isSupported());
+    console.log('window.speechToText:', window.speechToText);
+    
+    sendBtn.addEventListener('click', sendMessage);
+    symptomInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    voiceBtn.addEventListener('click', toggleVoiceInput);
+    
+    // Test microphone availability on page load
+    if (voiceBtn) {
+        // Change button color based on availability
+        if (SpeechToTextClient.isSupported()) {
+            voiceBtn.style.color = '#4F46E5'; // indigo color
+            voiceBtn.title = 'Click to use voice input';
+        } else {
+            voiceBtn.style.color = '#9CA3AF'; // gray color
+            voiceBtn.title = 'Voice input not supported in this browser';
+        }
+    }
+});
+
+function sendMessage() {
+    const input = document.getElementById('symptomInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message to chat
+    addChatMessage(message, 'user');
+    input.value = '';
+    currentSymptoms = message;
+    
+    // Show loading
+    addChatMessage('Let me ask you a few questions to better understand your symptoms...', 'assistant', true);
+    
+    // Send to backend for AI analysis
+    analyzeSymptoms(message);
+}
+
+function addChatMessage(message, sender, isLoading = false) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    
+    if (sender === 'user') {
+        messageDiv.className = 'flex justify-end';
+        messageDiv.innerHTML = `
+            <div class="bg-indigo-600 text-white rounded-lg p-3 max-w-md">
+                <p>${message}</p>
+                <span class="text-xs opacity-75">${getCurrentTime()}</span>
+            </div>
+        `;
+    } else {
+        messageDiv.className = 'flex items-start';
+        messageDiv.innerHTML = `
+            <div class="bg-gray-100 rounded-lg p-4 max-w-md ${isLoading ? 'animate-pulse' : ''}">
+                <p class="text-gray-800">${message}</p>
+                <span class="text-xs text-gray-500">${getCurrentTime()}</span>
+            </div>
+        `;
+    }
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    if (isLoading) {
+        messageDiv.id = 'loadingMessage';
+    }
+}
+
+async function analyzeSymptoms(symptoms, clarifications = null) {
+    try {
+        const response = await fetch('{{ url_for("patient.analyze_symptoms") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                symptoms: symptoms,
+                clarifications: clarifications 
+            })
+        });
+        
+        const result = await response.json();
+        
+        // Remove loading message
+        const loadingMsg = document.getElementById('loadingMessage');
+        if (loadingMsg) loadingMsg.remove();
+        
+        if (result.success) {
+            if (result.needs_clarification) {
+                // Show clarifying questions
+                clarifyingQuestions = result.questions;
+                addChatMessage("I have a few questions to help me provide a better analysis. Please answer them below.", 'assistant');
+                showClarifyingQuestions(result.questions, result.preliminary_severity);
+            } else {
+                // Show final analysis
+                currentAnalysis = result.analysis;
+                currentConsultationId = result.consultation_id;
+                
+                addChatMessage("Thank you for the additional information. Based on your symptoms and answers, I've prepared a detailed analysis.", 'assistant');
+                
+                // Show analysis results
+                displayAnalysisResults(result.analysis, result.severity);
+                
+                // Load follow-up suggestions and history
+                loadFollowupSuggestions();
+                loadFollowupHistory();
+            }
+        } else {
+            addChatMessage('Sorry, I encountered an error analyzing your symptoms. Please try again.', 'assistant');
+        }
+        
+    } catch (error) {
+        console.error('Analysis error:', error);
+        
+        // Remove loading message
+        const loadingMsg = document.getElementById('loadingMessage');
+        if (loadingMsg) loadingMsg.remove();
+        
+        addChatMessage('Sorry, there was a technical issue. Please try again later.', 'assistant');
+    }
+}
+
+function displayAnalysisResults(analysis, severity) {
+    const resultsDiv = document.getElementById('analysisResults');
+    const priorityBadge = document.getElementById('priorityBadge');
+    
+    // Set priority badge
+    const priorityConfig = {
+        'mild': { class: 'bg-green-100 text-green-800', text: 'Low Priority' },
+        'moderate': { class: 'bg-yellow-100 text-yellow-800', text: 'Moderate Priority' },
+        'critical': { class: 'bg-red-100 text-red-800', text: 'High Priority' }
+    };
+    
+    const config = priorityConfig[severity] || priorityConfig['mild'];
+    priorityBadge.className = `px-3 py-1 rounded-full text-sm font-medium ${config.class}`;
+    priorityBadge.textContent = config.text;
+    
+    // Populate causes
+    const causesList = document.getElementById('causesList');
+    causesList.innerHTML = '';
+    (analysis.possible_causes || []).forEach(cause => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-circle text-blue-600 text-xs mr-2"></i>${cause}`;
+        li.className = 'text-gray-700';
+        causesList.appendChild(li);
+    });
+    
+    // Populate remedies
+    const remediesList = document.getElementById('remediesList');
+    remediesList.innerHTML = '';
+    (analysis.remedies || []).forEach(remedy => {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fas fa-circle text-green-600 text-xs mr-2"></i>${remedy}`;
+        li.className = 'text-gray-700';
+        remediesList.appendChild(li);
+    });
+    
+    // Populate OTC suggestions
+    const otcDiv = document.getElementById('otcSuggestions');
+    otcDiv.innerHTML = '';
+    (analysis.otc_suggestions || []).forEach(suggestion => {
+        const div = document.createElement('div');
+        div.className = 'bg-blue-50 p-3 rounded-lg';
+        div.innerHTML = `<p class="text-blue-800 text-sm">${suggestion}</p>`;
+        otcDiv.appendChild(div);
+    });
+    
+    resultsDiv.classList.remove('hidden');
+}
+
+function startNewAnalysis() {
+    document.getElementById('analysisResults').classList.add('hidden');
+    document.getElementById('chatMessages').innerHTML = `
+        <div class="flex items-start">
+            <div class="bg-gray-100 rounded-lg p-4 max-w-md">
+                <p class="text-gray-800">Hello! I'm here to help analyze your symptoms. Please describe what you're experiencing.</p>
+                <span class="text-xs text-gray-500">${getCurrentTime()}</span>
+            </div>
+        </div>
+    `;
+}
+
+function toggleVoiceInput() {
+    console.log('Voice button clicked');
+    console.log('isListening:', isListening);
+    console.log('window.speechToText:', window.speechToText);
+    
+    if (isListening) {
+        stopListening();
+    } else {
+        startListening();
+    }
+}
+
+function startListening() {
+    console.log('Starting to listen...');
+    
+    // Check if speech recognition is available
+    if (!window.speechToText) {
+        console.error('speechToText not available');
+        const message = window.translationManager ? 
+            window.translationManager.translate('voice_not_supported') :
+            'Voice input is not available on this device. Please check if your browser supports speech recognition and microphone permissions are granted.';
+        alert(message);
+        return;
+    }
+    
+    // Check browser support
+    if (!SpeechToTextClient.isSupported()) {
+        console.error('Speech recognition not supported in this browser');
+        const message = window.translationManager ? 
+            window.translationManager.translate('voice_not_supported') :
+            'Speech recognition is not supported in this browser. Please try using Chrome, Edge, or Safari.';
+        alert(message);
+        return;
+    }
+    
+    // Request microphone permission first
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            console.log('Microphone permission granted');
+            // Stop the stream as we just needed permission
+            stream.getTracks().forEach(track => track.stop());
+            
+            isListening = true;
+            showVoiceModal();
+            
+            // Set up speech recognition callbacks for real-time feedback
+            window.speechToText.onResult = (result) => {
+                updateVoiceModalTranscript(result.interim || result.final);
+                if (result.final) {
+                    updateVoiceModalState('processing');
+                }
+            };
+            
+            console.log('Starting speech recognition...');
+            return window.speechToText.start();
+        })
+        .then(result => {
+            console.log('Speech recognition result:', result);
+            if (result.text && result.text.trim()) {
+                document.getElementById('symptomInput').value = result.text;
+                updateVoiceModalState('success');
+                
+                // Auto-close after showing success for 1 second
+                setTimeout(() => {
+                    closeVoiceModal();
+                }, 1000);
+            } else {
+                updateVoiceModalState('no_speech');
+                // Auto-close after showing no speech message for 2 seconds
+                setTimeout(() => {
+                    closeVoiceModal();
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Voice input error:', error);
+            let message = 'Voice input failed: ' + error.message;
+            
+            if (window.translationManager) {
+                if (error.name === 'NotAllowedError') {
+                    message = window.translationManager.translate('microphone_access_denied');
+                } else if (error.name === 'NotFoundError') {
+                    message = window.translationManager.translate('voice_not_supported');
+                } else {
+                    message = window.translationManager.translate('voice_not_supported');
+                }
+            }
+            
+            updateVoiceModalState('error', message);
+            // Auto-close after showing error for 3 seconds
+            setTimeout(() => {
+                closeVoiceModal();
+            }, 3000);
+        });
+}
+
+function showVoiceModal() {
+    document.getElementById('voiceModal').classList.remove('hidden');
+    document.getElementById('voiceModal').classList.add('flex');
+    updateVoiceModalState('listening');
+}
+
+function updateVoiceModalState(state, customMessage = '') {
+    const iconContainer = document.getElementById('voiceIconContainer');
+    const icon = document.getElementById('voiceIcon');
+    const title = document.getElementById('voiceModalTitle');
+    const subtitle = document.getElementById('voiceModalSubtitle');
+    const stopBtn = document.getElementById('stopVoiceBtn');
+    const closeBtn = document.getElementById('closeVoiceModal');
+    
+    // Reset classes
+    iconContainer.className = 'h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4';
+    icon.className = 'fas text-2xl';
+    
+    switch (state) {
+        case 'listening':
+            iconContainer.classList.add('bg-red-100');
+            icon.classList.add('fa-microphone', 'text-red-600', 'animate-pulse');
+            title.textContent = window.translationManager ? window.translationManager.translate('listening') : 'Listening...';
+            subtitle.textContent = window.translationManager ? window.translationManager.translate('speak_now') : 'Speak clearly about your symptoms';
+            stopBtn.classList.remove('hidden');
+            closeBtn.classList.add('hidden');
+            break;
+            
+        case 'processing':
+            iconContainer.classList.add('bg-blue-100');
+            icon.classList.add('fa-cog', 'text-blue-600', 'animate-spin');
+            title.textContent = 'Processing...';
+            subtitle.textContent = 'Converting speech to text...';
+            stopBtn.classList.add('hidden');
+            closeBtn.classList.add('hidden');
+            break;
+            
+        case 'success':
+            iconContainer.classList.add('bg-green-100');
+            icon.classList.add('fa-check', 'text-green-600');
+            title.textContent = 'Success!';
+            subtitle.textContent = 'Speech captured successfully';
+            stopBtn.classList.add('hidden');
+            closeBtn.classList.remove('hidden');
+            break;
+            
+        case 'no_speech':
+            iconContainer.classList.add('bg-yellow-100');
+            icon.classList.add('fa-exclamation-triangle', 'text-yellow-600');
+            title.textContent = 'No Speech Detected';
+            subtitle.textContent = 'Please try speaking again';
+            stopBtn.classList.add('hidden');
+            closeBtn.classList.remove('hidden');
+            break;
+            
+        case 'error':
+            iconContainer.classList.add('bg-red-100');
+            icon.classList.add('fa-exclamation-triangle', 'text-red-600');
+            title.textContent = 'Error';
+            subtitle.textContent = customMessage || 'Voice input failed';
+            stopBtn.classList.add('hidden');
+            closeBtn.classList.remove('hidden');
+            break;
+    }
+}
+
+function updateVoiceModalTranscript(text) {
+    const transcript = document.getElementById('voiceTranscript');
+    transcript.textContent = text || '';
+}
+
+function closeVoiceModal() {
+    stopListening();
+}
+
+function stopListening() {
+    if (window.speechToText && isListening) {
+        window.speechToText.stop();
+    }
+    isListening = false;
+    document.getElementById('voiceModal').classList.add('hidden');
+    document.getElementById('voiceModal').classList.remove('flex');
+}
+
+function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit',
+        second: '2-digit'
+    });
+}
+
+// Follow-up functionality
+async function loadFollowupSuggestions() {
+    if (!currentConsultationId) return;
+    
+    try {
+        const response = await fetch('{{ url_for("patient.get_followup_suggestions") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ consultation_id: currentConsultationId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            displayFollowupSuggestions(result.suggestions);
+        }
+    } catch (error) {
+        console.error('Error loading follow-up suggestions:', error);
+    }
+}
+
+function displayFollowupSuggestions(suggestions) {
+    const suggestionsList = document.getElementById('suggestionsList');
+    suggestionsList.innerHTML = '';
+    
+    suggestions.forEach(suggestion => {
+        const button = document.createElement('button');
+        button.className = 'text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 transition-colors';
+        button.textContent = suggestion;
+        button.onclick = () => {
+            document.getElementById('followupInput').value = suggestion;
+            askFollowup();
+        };
+        suggestionsList.appendChild(button);
+    });
+}
+
+async function askFollowup() {
+    const input = document.getElementById('followupInput');
+    const question = input.value.trim();
+    
+    if (!question || !currentConsultationId) return;
+    
+    // Add user question to follow-up history
+    addFollowupToHistory(question, 'Analyzing...', true);
+    input.value = '';
+    
+    try {
+        const response = await fetch('{{ url_for("patient.ask_followup") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                consultation_id: currentConsultationId,
+                question: question 
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Update the follow-up history with the AI response
+            updateLatestFollowup(result.response.answer);
+        } else {
+            updateLatestFollowup('Sorry, I encountered an error processing your question. Please try again.');
+        }
+        
+    } catch (error) {
+        console.error('Error asking follow-up question:', error);
+        updateLatestFollowup('Sorry, there was a technical issue. Please try again later.');
+    }
+}
+
+function addFollowupToHistory(question, answer, isLoading = false) {
+    const historyDiv = document.getElementById('followupHistory');
+    
+    const followupDiv = document.createElement('div');
+    followupDiv.className = 'bg-gray-50 rounded-lg p-4';
+    followupDiv.innerHTML = `
+        <div class="mb-2">
+            <span class="font-medium text-gray-900">Q:</span>
+            <span class="text-gray-800">${question}</span>
+        </div>
+        <div class="followup-answer ${isLoading ? 'animate-pulse' : ''}">
+            <span class="font-medium text-indigo-600">A:</span>
+            <span class="text-gray-700">${answer}</span>
+        </div>
+        <div class="text-xs text-gray-500 mt-2">${getCurrentTime()}</div>
+    `;
+    
+    historyDiv.appendChild(followupDiv);
+    
+    // Scroll to the new follow-up
+    followupDiv.scrollIntoView({ behavior: 'smooth' });
+    
+    if (isLoading) {
+        followupDiv.id = 'latestFollowup';
+    }
+}
+
+function updateLatestFollowup(answer) {
+    const latestFollowup = document.getElementById('latestFollowup');
+    if (latestFollowup) {
+        const answerElement = latestFollowup.querySelector('.followup-answer');
+        answerElement.className = 'followup-answer'; // Remove loading animation
+        answerElement.innerHTML = `
+            <span class="font-medium text-indigo-600">A:</span>
+            <span class="text-gray-700">${answer}</span>
+        `;
+        latestFollowup.removeAttribute('id');
+    }
+}
+
+async function loadFollowupHistory() {
+    if (!currentConsultationId) return;
+    
+    try {
+        const response = await fetch(`{{ url_for("patient.get_followup_history", consultation_id=0) }}`.replace('0', currentConsultationId));
+        
+        const result = await response.json();
+        
+        if (result.success && result.followups.length > 0) {
+            result.followups.reverse().forEach(followup => {
+                addFollowupToHistory(followup.question, followup.answer, false);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading follow-up history:', error);
+    }
+}
+
+function showClarifyingQuestions(questions, preliminarySeverity) {
+    const questionsDiv = document.getElementById('clarifyingQuestions');
+    const container = document.getElementById('questionsContainer');
+    
+    container.innerHTML = '';
+    
+    questions.forEach((question, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'space-y-3';
+        
+        let inputHtml = '';
+        
+        if (question.type === 'radio') {
+            inputHtml = `
+                <div class="space-y-2">
+                    ${question.options.map((option, optionIndex) => `
+                        <label class="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                            <input type="radio" name="${question.id}" value="${option}" 
+                                   class="text-indigo-600 focus:ring-indigo-500 focus:ring-2">
+                            <span class="text-gray-700">${option}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+        } else if (question.type === 'checkbox') {
+            inputHtml = `
+                <div class="space-y-2">
+                    ${question.options.map((option, optionIndex) => `
+                        <label class="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg">
+                            <input type="checkbox" name="${question.id}" value="${option}" 
+                                   class="text-indigo-600 focus:ring-indigo-500 focus:ring-2 rounded">
+                            <span class="text-gray-700">${option}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+        } else if (question.type === 'slider') {
+            inputHtml = `
+                <div class="space-y-3">
+                    <input type="range" name="${question.id}" 
+                           min="${question.min}" max="${question.max}" value="${question.default}"
+                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                           oninput="updateSliderValue('${question.id}', this.value)">
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span>${question.min}</span>
+                        <span id="${question.id}_value" class="font-medium text-indigo-600">${question.default}</span>
+                        <span>${question.max}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        questionDiv.innerHTML = `
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="font-medium text-gray-900 mb-3">${index + 1}. ${question.question}</h3>
+                ${inputHtml}
+            </div>
+        `;
+        
+        container.appendChild(questionDiv);
+    });
+    
+    // Show preliminary severity
+    if (preliminarySeverity) {
+        const severityDiv = document.createElement('div');
+        const severityClass = preliminarySeverity === 'High' ? 'bg-red-50 border-red-200 text-red-800' :
+                             preliminarySeverity === 'Moderate' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
+                             'bg-green-50 border-green-200 text-green-800';
+        
+        severityDiv.innerHTML = `
+            <div class="p-4 rounded-lg border ${severityClass}">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span class="font-medium">Preliminary Assessment: ${preliminarySeverity} Priority</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(severityDiv);
+    }
+    
+    questionsDiv.classList.remove('hidden');
+    
+    // Set up form submission
+    const form = document.getElementById('clarificationForm');
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        submitClarifications();
+    };
+}
+
+function updateSliderValue(questionId, value) {
+    document.getElementById(questionId + '_value').textContent = value;
+}
+
+function submitClarifications() {
+    const form = document.getElementById('clarificationForm');
+    const formData = new FormData(form);
+    const clarifications = {};
+    
+    // Process form data
+    for (let [key, value] of formData.entries()) {
+        if (clarifications[key]) {
+            // Handle multiple checkbox values
+            if (Array.isArray(clarifications[key])) {
+                clarifications[key].push(value);
+            } else {
+                clarifications[key] = [clarifications[key], value];
+            }
+        } else {
+            clarifications[key] = value;
+        }
+    }
+    
+    // Convert arrays to comma-separated strings
+    for (let key in clarifications) {
+        if (Array.isArray(clarifications[key])) {
+            clarifications[key] = clarifications[key].join(', ');
+        }
+    }
+    
+    // Hide questions and show loading
+    document.getElementById('clarifyingQuestions').classList.add('hidden');
+    addChatMessage('Thank you for the additional information. Analyzing your symptoms now...', 'assistant', true);
+    
+    // Continue with analysis
+    analyzeSymptoms(currentSymptoms, clarifications);
+}
+
+function skipClarification() {
+    // Hide questions and continue with basic analysis
+    document.getElementById('clarifyingQuestions').classList.add('hidden');
+    addChatMessage('Continuing with basic symptom analysis...', 'assistant', true);
+    
+    // Continue with analysis without clarifications
+    analyzeSymptoms(currentSymptoms, {});
+}
+
+// Add enter key support for follow-up input
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    const followupInput = document.getElementById('followupInput');
+    if (followupInput) {
+        followupInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askFollowup();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

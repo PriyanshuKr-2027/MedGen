@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MedGen - AI Telemedicine Platform{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><rect width='40' height='40' fill='%231e40af'/><rect x='10' y='16' width='20' height='8' fill='white'/><rect x='16' y='10' width='8' height='20' fill='white'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/Logo.svg') }}">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+</head>
+<body class="bg-gray-50 transition-colors duration-300">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-4 right-4 z-50 space-y-2">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} bg-{{ 'red' if category == 'error' else 'green' }}-100 border border-{{ 'red' if category == 'error' else 'green' }}-400 text-{{ 'red' if category == 'error' else 'green' }}-700 px-4 py-3 rounded shadow-lg">
+                        {{ message }}
+                        <button class="float-right ml-4 font-bold" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Navigation -->
+    {% if session.user_id %}
+    <nav class="bg-white shadow-sm border-b border-gray-200 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="flex items-center">
+                            <!-- Medical Cross with DNA -->
+                            <div class="relative mr-3">
+                                <div class="h-8 w-12 bg-blue-900 rounded-md flex items-center justify-center">
+                                    <div class="text-white text-lg font-bold">+</div>
+                                </div>
+                                <!-- DNA Helix overlay -->
+                                <div class="absolute -right-1 top-0 h-8 w-6">
+                                    <svg viewBox="0 0 24 32" class="h-full w-full">
+                                        <path d="M2 4 Q8 2 14 4 Q20 6 26 4" stroke="#10b981" stroke-width="2" fill="none"/>
+                                        <path d="M2 12 Q8 14 14 12 Q20 10 26 12" stroke="#10b981" stroke-width="2" fill="none"/>
+                                        <path d="M2 20 Q8 18 14 20 Q20 22 26 20" stroke="#10b981" stroke-width="2" fill="none"/>
+                                        <path d="M2 28 Q8 30 14 28 Q20 26 26 28" stroke="#10b981" stroke-width="2" fill="none"/>
+                                        <line x1="8" y1="6" x2="8" y2="10" stroke="#6b7280" stroke-width="1"/>
+                                        <line x1="20" y1="8" x2="20" y2="12" stroke="#6b7280" stroke-width="1"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="font-bold text-xl text-blue-900">MED</span>
+                                <span class="font-light text-xl text-green-500">gen</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Language Toggle -->
+                    <div class="relative">
+                        <button id="languageToggle" class="flex items-center space-x-2 text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md transition-colors">
+                            <i class="fas fa-globe"></i>
+                            <span id="currentLang">EN</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="languageDropdown" class="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-50 hidden border border-gray-200">
+                            <div class="py-1">
+                                <button class="lang-option block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="en">
+                                    <i class="fas fa-flag mr-2"></i>English
+                                </button>
+                                <button class="lang-option block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-lang="hi">
+                                    <i class="fas fa-flag mr-2"></i>हिंदी
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if session.user_role == 'patient' %}
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">
+                            <i class="fas fa-circle text-green-500 mr-1"></i><span data-translate="online">Online</span>
+                        </span>
+                    {% endif %}
+                    
+                    <span class="text-gray-700">{{ session.user_name }}</span>
+                    
+                    <a href="{{ url_for('auth.logout') }}" class="text-gray-600 hover:text-gray-900 flex items-center">
+                        <i class="fas fa-sign-out-alt mr-1"></i> <span data-translate="logout">Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating Emergency Call Button -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button id="emergencyCallBtn" 
+                class="group bg-red-600 hover:bg-red-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 animate-pulse"
+                title="Emergency Call - 108"
+                onclick="makeEmergencyCall()">
+            <i class="fas fa-phone text-xl"></i>
+            <!-- Tooltip -->
+            <span class="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <span data-translate="emergency_call">Emergency Call 108</span>
+                <!-- Arrow -->
+                <div class="absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-l-4 border-transparent border-l-gray-900"></div>
+            </span>
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/translation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Emergency Call Script -->
+    <script>
+        function makeEmergencyCall() {
+            // Show confirmation dialog
+            const message = window.translationManager ? 
+                window.translationManager.translate('confirm_emergency_call') :
+                'Are you sure you want to call emergency services (108)?';
+            
+            if (confirm(message)) {
+                // Try to open phone dialer with 108
+                try {
+                    // For mobile devices, this will open the dialer
+                    window.location.href = 'tel:108';
+                } catch (error) {
+                    console.error('Error making emergency call:', error);
+                    
+                    // Fallback: show emergency number
+                    const fallbackMessage = window.translationManager ? 
+                        window.translationManager.translate('emergency_number_fallback') :
+                        'Please dial 108 for emergency services.';
+                    alert(fallbackMessage);
+                }
+            }
+        }
+        
+        // Add hover effect on desktop
+        document.addEventListener('DOMContentLoaded', function() {
+            const emergencyBtn = document.getElementById('emergencyCallBtn');
+            if (emergencyBtn) {
+                // Remove animate-pulse on hover for better UX
+                emergencyBtn.addEventListener('mouseenter', function() {
+                    this.classList.remove('animate-pulse');
+                });
+                
+                emergencyBtn.addEventListener('mouseleave', function() {
+                    this.classList.add('animate-pulse');
+                });
+            }
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

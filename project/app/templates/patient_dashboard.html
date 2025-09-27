@@ -1,0 +1,161 @@
+{% extends "layout.html" %}
+
+{% block title %}Patient Dashboard - MedGen{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900" data-translate="patient_dashboard">Patient Dashboard</h1>
+        <p class="text-gray-600 mt-1"><span data-translate="welcome">Welcome back</span>, {{ user.name }}</p>
+    </div>
+
+    <!-- Patient Profile Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="flex items-center">
+            <div class="h-16 w-16 bg-indigo-600 rounded-full flex items-center justify-center">
+                <span class="text-white font-bold text-xl">{{ user.name[0] }}</span>
+            </div>
+            <div class="ml-6 flex-1">
+                <h2 class="text-xl font-semibold text-gray-900">{{ user.name }}</h2>
+                <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                    <div>
+                        <span class="font-medium">Age:</span> {{ user.age or 'Not specified' }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Gender:</span> {{ user.gender or 'Not specified' }}
+                    </div>
+                    <div>
+                        <span class="font-medium">Emergency:</span> +1-555-0199
+                    </div>
+                    <div>
+                        <span class="font-medium">Last Visit:</span> 2024-01-15
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Consultations -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.total_consultations }}</p>
+                    <p class="text-gray-600 text-sm">Total Consultations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Reports -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.pending_reports }}</p>
+                    <p class="text-gray-600 text-sm">Pending Reports</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contacts -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-phone text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.emergency_contacts }}</p>
+                    <p class="text-gray-600 text-sm">Emergency Contacts</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Alerts -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.health_alerts }}</p>
+                    <p class="text-gray-600 text-sm">Health Alerts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Report Symptoms -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-center">
+                <div class="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-heartbeat text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2" data-translate="ai_symptom_checker">Report Symptoms</h3>
+                <p class="text-gray-600 text-sm mb-6" data-translate="describe_symptoms">Describe your symptoms and get AI-powered analysis and recommendations</p>
+                <a href="{{ url_for('patient.symptom_report') }}" 
+                   class="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 transition-colors inline-block"
+                   data-translate="start_reporting">
+                    Start Reporting
+                </a>
+            </div>
+        </div>
+
+        <!-- Connect to Doctor -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-center">
+                <div class="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-video text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2" data-translate="video_consultation">Connect to Doctor</h3>
+                <p class="text-gray-600 text-sm mb-6" data-translate="consult_doctor">Instantly connect with an available healthcare professional</p>
+                <a href="{{ url_for('connect.connect_doctor') }}" 
+                   class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors inline-block"
+                   data-translate="connect_now">
+                    Connect Now
+                </a>
+            </div>
+        </div>
+
+        <!-- Consultation History -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-center">
+                <div class="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-history text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2" data-translate="consultation_history">Consultation History</h3>
+                <p class="text-gray-600 text-sm mb-6" data-translate="view_history">View past consultations, diagnoses, and treatment plans</p>
+                <a href="{{ url_for('patient.consultation_history') }}" 
+                   class="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors inline-block"
+                   data-translate="view_history">
+                    View History
+                </a>
+            </div>
+        </div>
+
+        <!-- Know Your Disease -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div class="text-center">
+                <div class="h-16 w-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-book-medical text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2" data-translate="know_your_disease">Know Your Disease</h3>
+                <p class="text-gray-600 text-sm mb-6" data-translate="search_learn_diseases">Search and learn about medical conditions and diseases</p>
+                <a href="{{ url_for('patient.disease_info') }}" 
+                   class="w-full bg-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-700 transition-colors inline-block"
+                   data-translate="learn_more">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

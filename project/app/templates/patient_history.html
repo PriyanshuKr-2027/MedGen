@@ -1,0 +1,264 @@
+{% extends "layout.html" %}
+
+{% block title %}Patient History - {{ patient.name }} - MedGen{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center mb-4">
+            <a href="{{ url_for('doctor.dashboard') }}" class="text-indigo-600 hover:text-indigo-800 mr-4">
+                <i class="fas fa-arrow-left"></i> <span>Back to Dashboard</span>
+            </a>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-start space-x-6">
+                <div class="flex-shrink-0">
+                    <div class="h-20 w-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <span class="text-indigo-600 font-bold text-2xl">
+                            {{ patient.name[:2].upper() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="flex-1">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ patient.name }}</h1>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="font-medium text-gray-600">Patient ID:</span>
+                            <p class="text-gray-900">{{ patient.id }}</p>
+                        </div>
+                        {% if patient.age %}
+                        <div>
+                            <span class="font-medium text-gray-600">Age:</span>
+                            <p class="text-gray-900">{{ patient.age }} years</p>
+                        </div>
+                        {% endif %}
+                        {% if patient.gender %}
+                        <div>
+                            <span class="font-medium text-gray-600">Gender:</span>
+                            <p class="text-gray-900">{{ patient.gender.title() }}</p>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <span class="font-medium text-gray-600">Total Consultations:</span>
+                            <p class="text-gray-900">{{ consultations|length }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if patient.email or patient.phone %}
+                    <div class="mt-4 flex space-x-4">
+                        {% if patient.email %}
+                        <a href="mailto:{{ patient.email }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800">
+                            <i class="fas fa-envelope mr-2"></i>{{ patient.email }}
+                        </a>
+                        {% endif %}
+                        {% if patient.phone %}
+                        <a href="tel:{{ patient.phone }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800">
+                            <i class="fas fa-phone mr-2"></i>{{ patient.phone }}
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="flex flex-col space-y-2">
+                    <button class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">
+                        <i class="fas fa-video mr-2"></i>Start Video Call
+                    </button>
+                    <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-comments mr-2"></i>Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Consultation History -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Consultation History</h2>
+                </div>
+                
+                <div class="divide-y divide-gray-200">
+                    {% for consultation in consultations %}
+                    <div class="p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    <div class="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-stethoscope text-gray-600"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-gray-900">
+                                        Consultation #{{ consultation.id }}
+                                    </h3>
+                                    <p class="text-sm text-gray-500">
+                                        {{ consultation.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                    {% if consultation.severity == 'critical' %}bg-red-100 text-red-800
+                                    {% elif consultation.severity == 'moderate' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-green-100 text-green-800{% endif %}">
+                                    {{ consultation.severity.title() }}
+                                </span>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                    {% if consultation.status == 'completed' %}bg-green-100 text-green-800
+                                    {% elif consultation.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                    {{ consultation.status.title() }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Symptoms Reported:</h4>
+                            <p class="text-gray-700 bg-gray-50 p-3 rounded-lg">{{ consultation.symptoms }}</p>
+                        </div>
+                        
+                        {% if consultation.ai_analysis %}
+                        <div class="mb-4">
+                            <h4 class="font-medium text-gray-900 mb-2">AI Analysis:</h4>
+                            <div class="text-gray-700 bg-blue-50 p-3 rounded-lg">
+                                <div class="text-sm">{{ consultation.ai_analysis }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Show treatments for this consultation -->
+                        {% set consultation_treatments = treatments|selectattr('consultation_id', 'equalto', consultation.id)|list %}
+                        {% if consultation_treatments %}
+                        <div class="mt-4">
+                            <h4 class="font-medium text-gray-900 mb-2">Treatments:</h4>
+                            {% for treatment in consultation_treatments %}
+                            <div class="bg-green-50 p-3 rounded-lg mb-2">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-600 mb-1">
+                                            Prescribed on {{ treatment.created_at.strftime('%B %d, %Y') }}
+                                        </p>
+                                        {% if treatment.prescription %}
+                                        <div class="mb-2">
+                                            <strong class="text-green-800">Prescription:</strong>
+                                            <p class="text-green-700">{{ treatment.prescription }}</p>
+                                        </div>
+                                        {% endif %}
+                                        {% if treatment.notes %}
+                                        <div>
+                                            <strong class="text-green-800">Notes:</strong>
+                                            <p class="text-green-700">{{ treatment.notes }}</p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-4 flex space-x-3">
+                            <a href="{{ url_for('doctor.view_consultation', consultation_id=consultation.id) }}" 
+                               class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                <i class="fas fa-eye mr-2"></i>View Details
+                            </a>
+                            {% if consultation.status == 'pending' %}
+                            <button class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700">
+                                <i class="fas fa-plus mr-2"></i>Add Treatment
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not consultations %}
+                    <div class="p-12 text-center">
+                        <i class="fas fa-clipboard-list text-gray-400 text-6xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No consultation history</h3>
+                        <p class="text-gray-600">This patient hasn't had any consultations yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Summary -->
+        <div class="space-y-6">
+            <!-- Quick Stats -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Total Consultations</span>
+                        <span class="font-semibold text-gray-900">{{ consultations|length }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Completed Treatments</span>
+                        <span class="font-semibold text-gray-900">{{ treatments|length }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Critical Cases</span>
+                        <span class="font-semibold text-red-600">
+                            {{ consultations|selectattr('severity', 'equalto', 'critical')|list|length }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">Last Visit</span>
+                        <span class="font-semibold text-gray-900">
+                            {% if consultations %}
+                                {{ consultations[0].created_at.strftime('%b %d, %Y') }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Symptoms -->
+            {% if consultations %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Common Symptoms</h3>
+                <div class="space-y-2">
+                    {% set all_symptoms = [] %}
+                    {% for consultation in consultations %}
+                        {% for symptom in consultation.symptoms.split(',')[:3] %}
+                            {% set _ = all_symptoms.append(symptom.strip().lower()) %}
+                        {% endfor %}
+                    {% endfor %}
+                    
+                    {% for symptom in all_symptoms|unique|list[:5] %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2 mb-2">
+                        {{ symptom.title() }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                <div class="space-y-3">
+                    <button class="w-full inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+                        <i class="fas fa-plus mr-2"></i>New Consultation
+                    </button>
+                    <button class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">
+                        <i class="fas fa-calendar mr-2"></i>Schedule Appointment
+                    </button>
+                    <button class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">
+                        <i class="fas fa-file-pdf mr-2"></i>Export History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
