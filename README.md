@@ -383,7 +383,6 @@ Bridging healthcare accessibility gaps through:
 ## 📞 Support
 
 For support and questions:
-- **Email**: support@medgen.ai
 - **GitHub Issues**: [Create an issue](https://github.com/PriyanshuKr-2027/MedGen/issues)
 - **Documentation**: [Wiki](https://github.com/PriyanshuKr-2027/MedGen/wiki)
 
